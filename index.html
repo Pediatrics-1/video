@@ -7,85 +7,106 @@
 <meta name="color-scheme" content="light">
 <style>
   :root{
-    --brand:#0051A8;
+    --brand:#0A66C2;
     --bg:#F7FAFF;
     --panel:#ffffff;
     --text:#0F172A;
     --muted:#64748B;
-    --line:#E2E8F0;
-    --radius:18px;
-    --shadow:0 10px 28px rgba(2,8,23,.06), 0 2px 10px rgba(2,8,23,.05);
+    --line:#E6ECF5;
+    --radius:16px;
+    --shadow:0 10px 28px rgba(2,8,23,.06), 0 2px 10px rgba(2,8,23,.04);
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;-webkit-font-smoothing:antialiased}
-  body{padding-bottom:64px}
+  body{padding-bottom:80px}
 
   /* Header */
   header{
     position:sticky; top:0; z-index:30;
-    background:linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,255,255,.9));
-    backdrop-filter:saturate(180%) blur(10px);
+    background:linear-gradient(180deg, rgba(255,255,255,.96), rgba(255,255,255,.9));
+    backdrop-filter:saturate(160%) blur(10px);
     border-bottom:1px solid var(--line);
   }
-  .wrap{max-width:880px;margin:0 auto;padding:11px 15px}
-
+  .wrap{max-width:960px;margin:0 auto;padding:12px 18px}
   .header-row{display:flex; gap:12px; align-items:center}
-  .logo{ width:50px; height:70px; display:grid; place-items:center; flex:0 0 auto; padding:4px; }
-  .logo img{ width:100%; height:100%; object-fit:contain; }
-
+  .logo{ width:54px; height:72px; display:grid; place-items:center; flex:0 0 auto; padding:4px; border-radius:12px; background:linear-gradient(180deg,#fff,#f6f9ff); border:1px solid var(--line) }
+  .logo img{ width:100%; height:100%; object-fit:contain }
   .header-title{margin:0; font-weight:900; font-size:18px; line-height:1.35; letter-spacing:.1px; color:#0B2E5E}
   .header-sub{margin:4px 0 0; color:#0B2E5E; font-size:13px; font-weight:700}
 
-  /* Blocks */
-  .block{margin-top:12px; background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:14px}
-  .block-title{margin:0 0 10px; font-size:14px; font-weight:800; color:#0B2E5E; letter-spacing:.2px}
+  /* Main grid — блоки разнесены как на скрине */
+  main.wrap{ display:grid; gap:22px; }
 
-  /* Selector */
-  .theme-select{display:grid; gap:8px}
-  select{ width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:#fff; color:#000; font:inherit; outline:none; }
+  /* Общий стиль карточек */
+  .block{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:16px;
+  }
 
-  /* Topic Card */
-  .card-title{font-size:24px; font-weight:900; margin:0 0 12px; line-height:1.2; letter-spacing:.2px; color:#0B2E5E}
-  .player{ width:100%; aspect-ratio:16/9; background:#000; border-radius:0; border:none; overflow:hidden; }
+  /* Заголовки внутри блоков (по необходимости) */
+  .block h2{
+    margin:0 0 8px;
+    font-size:22px; font-weight:900; color:#0B2E5E;
+  }
+
+  /* Селектор темы */
+  .theme-select{display:grid; gap:10px; margin-top:10px}
+  label{font-size:13px; color:#334155}
+  select{
+    width:100%; padding:12px 14px;
+    border:1px solid var(--line); border-radius:12px;
+    background:#fff; color:#0f172a; font:inherit; outline:none;
+  }
+
+  /* Контент */
+  .topic-title{ font-size:26px; font-weight:900; margin:0 0 8px; line-height:1.2; letter-spacing:.2px; color:#0B2E5E }
+  .player{ width:100%; aspect-ratio:16/9; background:#000; border-radius:12px; overflow:hidden; border:1px solid #0b2e5e14 }
   .player iframe, .player video{ width:100%; height:100%; display:block; border:0; }
 
-  /* Description (Markdown + safe HTML) */
-  .desc{margin-top:12px}
-  .desc p{margin:0 0 10px}
-  .desc h1,.desc h2,.desc h3{margin:12px 0 8px}
-  .desc ul{margin:8px 0 10px; padding-left:22px}
+  .desc{display:grid; gap:10px}
+  .desc p{margin:0}
+  .desc h1,.desc h2,.desc h3{margin:4px 0 2px}
+  .desc ul{margin:2px 0 0; padding-left:22px}
   .desc a{color:var(--brand); text-decoration:underline}
 
-  /* Actions */
-  .actions{display:flex; gap:10px; margin-top:12px; flex-wrap:wrap}
+  .actions{display:flex; gap:10px; flex-wrap:wrap}
   .btn{
     appearance:none; border:1px solid var(--brand); background:var(--brand); color:#fff;
     padding:11px 14px; border-radius:12px; font-weight:800; display:inline-flex; align-items:center; gap:8px;
-    cursor:pointer; transition:transform .06s ease, box-shadow .2s ease;
+    cursor:pointer; transition:transform .06s ease, box-shadow .2s ease, opacity .2s.ease;
+    box-shadow:0 6px 16px rgba(10,102,194,.18);
   }
-  .btn:active{ transform:translateY(1px); }
   .btn.secondary{background:#fff; color:var(--brand)}
+  .btn:active{ transform:translateY(1px); }
   .btn.disabled{opacity:.6; background:#e5ecf6; border-color:#e5ecf6; color:#6b7280; pointer-events:none}
   .like-count{display:inline-block; min-width:28px; padding:2px 8px; background:#fff; color:#0B2E5E; border-radius:999px; border:1px solid #cfe0f3; font-weight:800}
 
-  /* Comments */
-  .comments{margin-top:14px}
-  .comment-list{display:grid; gap:10px}
-  .comment{background:#E6F0FA;border:1px solid var(--line);border-radius:12px;padding:10px}
-  .comment small{color:var(--muted); display:block; margin-top:6px}
-  .empty{padding:10px;color:var(--muted);font-size:14px}
+  /* AI */
+  .ai-note{font-size:13px; color:#334155; margin:6px 0 0}
+  .ai-answer{ border:1px solid var(--line); border-radius:12px; padding:12px; background:#F1F5FE; }
+  .ai-answer .muted{color:#64748B; font-size:14px}
 
-  form.comment-form{display:grid; gap:8px; margin-top:12px}
+  /* Формы/комменты */
+  form.comment-form{display:grid; gap:10px}
   input[type="text"], textarea{
     width:100%; padding:12px; border:1px solid var(--line); border-radius:12px; background:#fff; color:#000; font:inherit
   }
   textarea{min-height:96px; resize:vertical}
-  .status{margin-top:6px; font-size:14px; color:var(--muted)}
+  .status{margin-top:2px; font-size:14px; color:#64748B}
 
-  /* AI QA */
-  .ai-note{font-size:13px; color:#334155; margin:0 0 8px}
-  .ai-answer{margin-top:10px; border:1px solid var(--line); border-radius:12px; padding:12px; background:#F1F5FE}
-  .ai-answer .muted{color:#64748B; font-size:14px}
+  .comments{ display:grid; gap:12px; }
+  .comment-list{display:grid; gap:10px}
+  .comment{ background:#F5F9FF; border:1px solid var(--line); border-radius:12px; padding:10px; }
+  .comment small{color:#64748B; display:block; margin-top:6px}
+  .empty{padding:10px;color:#64748B;font-size:14px}
+
+  /* Footer */
+  footer{margin:0; background:transparent;}
+  .author{max-width:960px; margin:0 auto 24px; padding:8px 18px; color:#334155; font-size:13px; display:flex; align-items:center; gap:8px;}
+  .author .dot{width:6px;height:6px;border-radius:50%;background:#94a3b8;opacity:.6}
 </style>
 </head>
 <body>
@@ -104,158 +125,105 @@
 </header>
 
 <main class="wrap">
-  <!-- Тематика -->
-  <section class="block">
-    <h2 class="block-title">Тематика для студентов 4 курса</h2>
+  <!-- Блок: Выбор темы -->
+  <section class="block" id="block-select">
     <div class="theme-select">
-      <label for="topicSelect" style="font-size:13px; color:#334155">Выберите тему</label>
+      <label for="topicSelect">Выберите тему</label>
       <select id="topicSelect" aria-label="Выбор темы"></select>
     </div>
   </section>
 
-  <!-- Текущая тема -->
-  <section id="card" class="block" hidden>
-    <h2 id="topicTitle" class="card-title"></h2>
+  <!-- Блок: Видео -->
+  <section class="block" id="block-video" hidden>
+    <h2 class="topic-title" id="topicTitle">Тема</h2>
     <div id="player" class="player"></div>
-    <div id="desc" class="desc"></div>
+  </section>
 
-    <div class="actions">
+  <!-- Блок: Описание -->
+  <section class="block" id="block-desc" hidden>
+    <div id="desc" class="desc"></div>
+  </section>
+
+  <!-- Блок: ИИ -->
+  <section class="block" id="block-ai" hidden>
+    <p class="ai-note">ИИ отвечает строго в рамках выбранной темы.</p>
+    <form id="aiForm" class="comment-form">
+      <textarea id="aiQuestion" placeholder="Сформулируйте вопрос по теме…" required></textarea>
+      <div class="actions">
+        <button id="askBtn" class="btn" type="submit">🤖 Спросить ИИ</button>
+        <span id="aiStatus" class="status"></span>
+      </div>
+    </form>
+    <div id="aiAnswer" class="ai-answer" hidden>
+      <div class="muted">Ответ:</div>
+      <div id="aiAnswerBody"></div>
+    </div>
+  </section>
+
+  <!-- Блок: Нравится / Поделиться / Ваш комментарий / Комментарии -->
+  <section class="block" id="block-social" hidden>
+    <div class="actions" style="margin-bottom:8px">
       <button id="likeBtn" class="btn" type="button">👍 Нравится <span id="likeCount" class="like-count">0</span></button>
       <button id="shareBtn" class="btn secondary" type="button">↗ Поделиться</button>
     </div>
 
-    <!-- AI Q&A -->
-    <section class="block" style="margin-top:14px">
-      <h3 class="block-title">Вопрос ИИ по текущей теме</h3>
-      <p class="ai-note">ИИ отвечает строго в рамках выбранной темы (по содержимому раздела выше).</p>
-      <form id="aiForm" class="comment-form">
-        <textarea id="aiQuestion" placeholder="Сформулируйте вопрос по теме…" required></textarea>
-        <div class="actions">
-          <button id="askBtn" class="btn" type="submit">🤖 Спросить ИИ</button>
-          <span id="aiStatus" class="status"></span>
-        </div>
-      </form>
-      <div id="aiAnswer" class="ai-answer" hidden>
-        <div class="muted">Ответ:</div>
-        <div id="aiAnswerBody"></div>
-      </div>
-    </section>
+    <form id="commentForm" class="comment-form" aria-label="Ваш комментарий">
+      <input name="name" type="text" placeholder="Ваше имя (необязательно)" />
+      <textarea name="text" placeholder="Напишите комментарий…" required></textarea>
+      <button class="btn" type="submit">Отправить</button>
+    </form>
+    <div id="commentMsg" class="status"></div>
 
-    <!-- Комментарии -->
-    <section class="comments" aria-label="Комментарии">
-      <h3 style="margin:10px 0 8px;">Комментарии</h3>
+    <section class="comments" aria-label="Комментарии" style="margin-top:10px">
       <div id="comments" class="comment-list">
         <div class="empty">Загрузка…</div>
       </div>
-      <h4 style="margin:16px 0 8px; font-size:15px; font-weight:700; color:#334155;">Ваш комментарий</h4>
-      <form id="commentForm" class="comment-form">
-        <input name="name" type="text" placeholder="Ваше имя (необязательно)" />
-        <textarea name="text" placeholder="Напишите комментарий…" required></textarea>
-        <button class="btn" type="submit">Отправить</button>
-      </form>
-      <div id="commentMsg" class="status"></div>
     </section>
 
-    <p id="pageStatus" class="status" style="margin:12px 2px;"></p>
+    <p id="pageStatus" class="status" style="margin:2px 2px 0;"></p>
   </section>
 </main>
+
+<footer>
+  <div class="author">
+    <span class="dot"></span>
+    Бакоев Фаррух Саидчонович
+  </div>
+</footer>
 
 <script>
 /* ===== URL вашего Apps Script (…/exec) ===== */
 const API_BASE = 'https://script.google.com/macros/s/AKfycbx8f3dhWJBgHmyldncwi-n4eHeegFfe7aRnpLtUeodK7AtcwiZFrn2_E6SPOqK0l6WgIg/exec'.trim();
 
-/* ===== Разрешаем безопасные inline-теги из ячейки (span/b/strong/i/em/u/a) ===== */
-function allowInlineHtml(input) {
-  if (!input) return { text: '', placeholders: [] };
-  const placeholders = [];
-  const withPh = input.replace(/<(\/?)(span|b|strong|i|em|u|a)([^>]*)>/gi, (m, slash, tag, attrs) => {
-    tag = tag.toLowerCase();
-    let safe = '';
-    if (slash) {
-      safe = `</${tag}>`;
-    } else {
-      if (tag === 'a') {
-        const hrefMatch = attrs.match(/href\s*=\s*"(.*?)"/i) || attrs.match(/href\s*=\s*'(.*?)'/i);
-        const href = hrefMatch ? hrefMatch[1] : '';
-        if (/^https?:\/\//i.test(href)) {
-          safe = `<a href="${href.replace(/"/g,'&quot;')}" target="_blank" rel="noopener">`;
-        } else {
-          safe = '<a>';
-        }
-      } else if (tag === 'span') {
-        const styleMatch = attrs.match(/style\s*=\s*"(.*?)"/i) || attrs.match(/style\s*=\s*'(.*?)'/i);
-        let style = styleMatch ? styleMatch[1] : '';
-        const allowed = [];
-        style.split(';').forEach(rule => {
-          const [kRaw, vRaw] = rule.split(':');
-          if (!kRaw || !vRaw) return;
-          const k = kRaw.trim().toLowerCase();
-          const v = vRaw.trim();
-          if (['color','background-color','font-weight','font-style','text-decoration','font-size'].includes(k)) {
-            allowed.push(`${k}:${v}`);
-          }
-        });
-        safe = allowed.length ? `<span style="${allowed.join(';')}">` : '<span>';
-      } else {
-        safe = `<${tag}>`;
-      }
-    }
-    const ph = `@@TAG${placeholders.length}@@`;
-    placeholders.push(safe);
-    return ph;
-  });
-
-  const escaped = withPh
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;');
-
-  return { text: escaped, placeholders };
-}
-
-/* ===== Markdown → HTML + возврат разрешённых тегов ===== */
+/* ===== Простая (безопасная) обработка Markdown в HTML (можно заменить своей) ===== */
 function mdToHtml(md){
-  const { text, placeholders } = allowInlineHtml(md || '');
-
-  let out = text
-    .replace(/^###\s+(.*)$/gm, '<h3>$1</h3>')
-    .replace(/^##\s+(.*)$/gm, '<h2>$1</h2>')
-    .replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
-
-  out = out.replace(/^(?:-\s+.+(?:\n|$))+?/gm, match=>{
-    const items = match.trim().split(/\n/).map(l=>l.replace(/^-+\s+/,'').trim()).filter(Boolean);
-    return '<ul>'+items.map(it=>'<li>'+it+'</li>').join('')+'</ul>';
-  });
-
-  out = out.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-  out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-           .replace(/\*([^*]+)\*/g, '<em>$1</em>');
-
+  if(!md) return '';
+  let out = md
+    .replace(/^###\s+(.*)$/gm,'<h3>$1</h3>')
+    .replace(/^##\s+(.*)$/gm,'<h2>$1</h2>')
+    .replace(/^#\s+(.*)$/gm,'<h1>$1</h1>')
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>')
+    .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*([^*]+)\*/g,'<em>$1</em>');
   out = out.split(/\n{2,}/).map(p=>{
-    if (/^<h\d|^<ul/.test(p.trim())) return p;
+    if(/^<h\d/.test(p.trim())) return p;
     return '<p>'+p.trim().replace(/\n/g,'<br>')+'</p>';
   }).join('');
-
-  placeholders.forEach((tag, i)=>{
-    const ph = new RegExp('@@TAG'+i+'@@','g');
-    out = out.replace(ph, tag);
-  });
-
   return out;
 }
 
-/* ===== Utilities ===== */
-function el(tag, attrs={}, children=[]) {
+/* ===== Helpers ===== */
+function el(tag, attrs={}, children=[]){
   const node = document.createElement(tag);
   Object.entries(attrs).forEach(([k,v])=>{
-    if (k === 'class') node.className = v;
-    else if (k === 'html') node.innerHTML = v;
-    else if (v !== undefined && v !== null) node.setAttribute(k, v);
+    if (k==='class') node.className=v;
+    else if (k==='html') node.innerHTML=v;
+    else if (v!==undefined && v!==null) node.setAttribute(k,v);
   });
-  [].concat(children).filter(Boolean).forEach(c => node.append(c));
+  [].concat(children).filter(Boolean).forEach(c=>node.append(c));
   return node;
 }
-async function fetchJSON(url, options) {
+async function fetchJSON(url, options){
   const res = await fetch(url, options);
   if (!res.ok) throw new Error('HTTP '+res.status);
   return res.json();
@@ -310,18 +278,11 @@ async function loadComments(topicId){
   }
 }
 
-/* ===== Likes (1 раз на устройство) ===== */
-function getDeviceToken(){
-  let t = localStorage.getItem('kdb_device_token');
-  if (!t) {
-    t = (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)) + String(Date.now());
-    localStorage.setItem('kdb_device_token', t);
-  }
-  return t;
-}
+/* ===== Likes (1 раз на устройство, простая версия) ===== */
 function updateLikeUiDisabled(disabled){
   const btn = document.getElementById('likeBtn');
-  if (disabled) btn.classList.add('disabled'); else btn.classList.remove('disabled');
+  btn.classList.toggle('disabled', !!disabled);
+  btn.disabled = !!disabled;
 }
 async function refreshLikes(topicId){
   try{
@@ -335,7 +296,7 @@ async function likeCurrent(){
   const fd = new FormData();
   fd.append('action','like');
   fd.append('topicId', CURRENT.id);
-  fd.append('token', getDeviceToken());
+  fd.append('token', (crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2))+Date.now());
   try{
     const res = await fetch(API_BASE, { method:'POST', body: fd });
     const json = await res.json();
@@ -360,7 +321,7 @@ async function shareCurrent(){
   }
 }
 
-/* ===== AI: ask ===== */
+/* ===== AI ===== */
 function setAiBusy(busy, msg){
   const btn = document.getElementById('askBtn');
   const st  = document.getElementById('aiStatus');
@@ -408,18 +369,23 @@ async function selectTopic(id){
   if (!t) return;
   CURRENT = t;
 
+  // Заголовок и видео
   document.getElementById('topicTitle').textContent = t.title;
   renderPlayer(t.embed);
+  document.getElementById('block-video').hidden = false;
 
+  // Описание
   const desc = document.getElementById('desc');
   desc.innerHTML = t.descriptionHtml ? t.descriptionHtml : mdToHtml(t.description || '');
+  document.getElementById('block-desc').hidden = false;
 
-  document.getElementById('card').hidden = false;
-  document.getElementById('pageStatus').textContent = '';
-
-  // reset AI box
+  // ИИ
   document.getElementById('aiAnswer').hidden = true;
   document.getElementById('aiStatus').textContent = '';
+  document.getElementById('block-ai').hidden = false;
+
+  // Соц/комментарии
+  document.getElementById('block-social').hidden = false;
 
   await loadComments(id);
   await refreshLikes(id);
@@ -430,12 +396,10 @@ async function selectTopic(id){
 
 /* ===== Boot ===== */
 async function boot(){
-  const status = document.getElementById('pageStatus');
   try{
     const data = await fetchJSON(`${API_BASE}?action=topics`);
     TOPICS = data.topics || [];
     if (TOPICS.length === 0){
-      status.textContent = 'Пока нет материалов. Добавьте строки в лист «База».';
       return;
     }
     buildSelect(TOPICS);
@@ -445,8 +409,7 @@ async function boot(){
     document.getElementById('topicSelect').value = initialId;
     await selectTopic(initialId);
   }catch(err){
-    const msg = (err && err.message) ? err.message : 'unknown';
-    status.innerHTML = '<span style="color:#b91c1c">Не удалось загрузить данные ('+msg+'). Проверьте API_BASE и доступ веб-приложения.</span>';
+    console.error(err);
   }
 }
 
