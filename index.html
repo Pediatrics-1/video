@@ -30,18 +30,8 @@
   .wrap{max-width:880px;margin:0 auto;padding:11px 15px}
 
   .header-row{display:flex; gap:12px; align-items:center}
-.logo{
-    width:50px; height:70px;
-    display:grid; place-items:center;
-    flex:0 0 auto;
-    padding:4px;  /* чуть отступа вокруг картинки */
-}
-.logo img{
-    width:100%;
-    height:100%;
-    object-fit:contain;
-}
-
+  .logo{ width:50px; height:70px; display:grid; place-items:center; flex:0 0 auto; padding:4px; }
+  .logo img{ width:100%; height:100%; object-fit:contain; }
 
   .header-title{margin:0; font-weight:900; font-size:18px; line-height:1.35; letter-spacing:.1px; color:#0B2E5E}
   .header-sub{margin:4px 0 0; color:#0B2E5E; font-size:13px; font-weight:700}
@@ -52,29 +42,12 @@
 
   /* Selector */
   .theme-select{display:grid; gap:8px}
-  select{
-    width:100%; padding:12px 14px;
-    border:1px solid var(--line); border-radius:12px; background:#fff; color:#000; font:inherit;
-    outline:none;
-  }
+  select{ width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:#fff; color:#000; font:inherit; outline:none; }
 
   /* Topic Card */
   .card-title{font-size:24px; font-weight:900; margin:0 0 12px; line-height:1.2; letter-spacing:.2px; color:#0B2E5E}
-.player{
-  width:100%;
-  aspect-ratio:16/9;
-  background:#000;
-  border-radius:0;    /* убираем скругления */
-  border:none;        /* убираем рамку */
-  overflow:hidden;
-}
-.player iframe, .player video{
-  width:100%;
-  height:100%;
-  display:block;
-  border:0;
-}
-
+  .player{ width:100%; aspect-ratio:16/9; background:#000; border-radius:0; border:none; overflow:hidden; }
+  .player iframe, .player video{ width:100%; height:100%; display:block; border:0; }
 
   /* Description (Markdown + safe HTML) */
   .desc{margin-top:12px}
@@ -88,10 +61,12 @@
   .btn{
     appearance:none; border:1px solid var(--brand); background:var(--brand); color:#fff;
     padding:11px 14px; border-radius:12px; font-weight:800; display:inline-flex; align-items:center; gap:8px;
+    cursor:pointer; transition:transform .06s ease, box-shadow .2s ease;
   }
+  .btn:active{ transform:translateY(1px); }
   .btn.secondary{background:#fff; color:var(--brand)}
   .btn.disabled{opacity:.6; background:#e5ecf6; border-color:#e5ecf6; color:#6b7280; pointer-events:none}
-  .like-count{display:inline-block; min-width:28px; padding:2px 8px; background:#fff; color:var(--brand); border-radius:999px; border:1px solid #cfe0f3; font-weight:800}
+  .like-count{display:inline-block; min-width:28px; padding:2px 8px; background:#fff; color:#0B2E5E; border-radius:999px; border:1px solid #cfe0f3; font-weight:800}
 
   /* Comments */
   .comments{margin-top:14px}
@@ -106,6 +81,11 @@
   }
   textarea{min-height:96px; resize:vertical}
   .status{margin-top:6px; font-size:14px; color:var(--muted)}
+
+  /* AI QA */
+  .ai-note{font-size:13px; color:#334155; margin:0 0 8px}
+  .ai-answer{margin-top:10px; border:1px solid var(--line); border-radius:12px; padding:12px; background:#F1F5FE}
+  .ai-answer .muted{color:#64748B; font-size:14px}
 </style>
 </head>
 <body>
@@ -144,33 +124,45 @@
       <button id="shareBtn" class="btn secondary" type="button">↗ Поделиться</button>
     </div>
 
+    <!-- AI Q&A -->
+    <section class="block" style="margin-top:14px">
+      <h3 class="block-title">Вопрос ИИ по текущей теме</h3>
+      <p class="ai-note">ИИ отвечает строго в рамках выбранной темы (по содержимому раздела выше).</p>
+      <form id="aiForm" class="comment-form">
+        <textarea id="aiQuestion" placeholder="Сформулируйте вопрос по теме…" required></textarea>
+        <div class="actions">
+          <button id="askBtn" class="btn" type="submit">🤖 Спросить ИИ</button>
+          <span id="aiStatus" class="status"></span>
+        </div>
+      </form>
+      <div id="aiAnswer" class="ai-answer" hidden>
+        <div class="muted">Ответ:</div>
+        <div id="aiAnswerBody"></div>
+      </div>
+    </section>
+
+    <!-- Комментарии -->
     <section class="comments" aria-label="Комментарии">
-  <h3 style="margin:10px 0 8px;">Комментарии</h3>
+      <h3 style="margin:10px 0 8px;">Комментарии</h3>
+      <div id="comments" class="comment-list">
+        <div class="empty">Загрузка…</div>
+      </div>
+      <h4 style="margin:16px 0 8px; font-size:15px; font-weight:700; color:#334155;">Ваш комментарий</h4>
+      <form id="commentForm" class="comment-form">
+        <input name="name" type="text" placeholder="Ваше имя (необязательно)" />
+        <textarea name="text" placeholder="Напишите комментарий…" required></textarea>
+        <button class="btn" type="submit">Отправить</button>
+      </form>
+      <div id="commentMsg" class="status"></div>
+    </section>
 
-  <!-- список комментариев -->
-  <div id="comments" class="comment-list">
-    <div class="empty">Загрузка…</div>
-  </div>
-
-  <!-- разделитель -->
-  <h4 style="margin:16px 0 8px; font-size:15px; font-weight:700; color:#334155;">Ваш комментарий</h4>
-
-  <!-- форма для ввода -->
-  <form id="commentForm" class="comment-form">
-    <input name="name" type="text" placeholder="Ваше имя (необязательно)" />
-    <textarea name="text" placeholder="Напишите комментарий…" required></textarea>
-    <button class="btn" type="submit">Отправить</button>
-  </form>
-  <div id="commentMsg" class="status"></div>
-</section>
-
-
-  <p id="pageStatus" class="status" style="margin:12px 2px;">Загрузка тем…</p>
+    <p id="pageStatus" class="status" style="margin:12px 2px;"></p>
+  </section>
 </main>
 
 <script>
 /* ===== URL вашего Apps Script (…/exec) ===== */
-const API_BASE = 'https://script.google.com/macros/s/AKfycbzxGZVrxDXEJwKoBfWXWUJbJZWzgloRDvrb4aAeQUIgLJLRLVsQA7O69koTRJdeYpJs/exec'.trim();
+const API_BASE = 'https://script.google.com/macros/s/AKfycbx8f3dhWJBgHmyldncwi-n4eHeegFfe7aRnpLtUeodK7AtcwiZFrn2_E6SPOqK0l6WgIg/exec'.trim();
 
 /* ===== Разрешаем безопасные inline-теги из ячейки (span/b/strong/i/em/u/a) ===== */
 function allowInlineHtml(input) {
@@ -179,7 +171,6 @@ function allowInlineHtml(input) {
   const withPh = input.replace(/<(\/?)(span|b|strong|i|em|u|a)([^>]*)>/gi, (m, slash, tag, attrs) => {
     tag = tag.toLowerCase();
     let safe = '';
-
     if (slash) {
       safe = `</${tag}>`;
     } else {
@@ -209,7 +200,6 @@ function allowInlineHtml(input) {
         safe = `<${tag}>`;
       }
     }
-
     const ph = `@@TAG${placeholders.length}@@`;
     placeholders.push(safe);
     return ph;
@@ -260,7 +250,7 @@ function el(tag, attrs={}, children=[]) {
   Object.entries(attrs).forEach(([k,v])=>{
     if (k === 'class') node.className = v;
     else if (k === 'html') node.innerHTML = v;
-    else node.setAttribute(k, v);
+    else if (v !== undefined && v !== null) node.setAttribute(k, v);
   });
   [].concat(children).filter(Boolean).forEach(c => node.append(c));
   return node;
@@ -342,12 +332,10 @@ async function refreshLikes(topicId){
 async function likeCurrent(){
   if (!CURRENT) return;
   if (localStorage.getItem('liked_'+CURRENT.id)) { updateLikeUiDisabled(true); return; }
-
   const fd = new FormData();
   fd.append('action','like');
   fd.append('topicId', CURRENT.id);
   fd.append('token', getDeviceToken());
-
   try{
     const res = await fetch(API_BASE, { method:'POST', body: fd });
     const json = await res.json();
@@ -372,6 +360,48 @@ async function shareCurrent(){
   }
 }
 
+/* ===== AI: ask ===== */
+function setAiBusy(busy, msg){
+  const btn = document.getElementById('askBtn');
+  const st  = document.getElementById('aiStatus');
+  btn.classList.toggle('disabled', !!busy);
+  btn.disabled = !!busy;
+  st.textContent = msg || (busy ? 'Готовим ответ…' : '');
+}
+function showAiAnswer(html){
+  const box = document.getElementById('aiAnswer');
+  const body = document.getElementById('aiAnswerBody');
+  body.innerHTML = html;
+  box.hidden = false;
+}
+async function askAI(){
+  if (!CURRENT) return;
+  const qEl = document.getElementById('aiQuestion');
+  const q = qEl.value.trim();
+  if (!q) return;
+  setAiBusy(true, 'Формулируем ответ…');
+
+  const fd = new FormData();
+  fd.append('action','ask');
+  fd.append('topicId', CURRENT.id);
+  fd.append('question', q);
+
+  try{
+    const res = await fetch(API_BASE, { method:'POST', body: fd });
+    const json = await res.json();
+    if (json.ok){
+      const html = mdToHtml((json.answer || '').trim());
+      showAiAnswer(html || '<p><em>Пустой ответ</em></p>');
+      setAiBusy(false, 'Готово');
+      qEl.value = '';
+    } else {
+      setAiBusy(false, 'Ошибка: ' + (json.error || 'неизвестно'));
+    }
+  }catch(e){
+    setAiBusy(false, 'Ошибка сети');
+  }
+}
+
 /* ===== Select topic ===== */
 async function selectTopic(id){
   const t = TOPICS.find(x=>String(x.id)===String(id));
@@ -382,12 +412,14 @@ async function selectTopic(id){
   renderPlayer(t.embed);
 
   const desc = document.getElementById('desc');
-  // Если бэкенд отдаёт готовый HTML (descriptionHtml) — используем его,
-  // иначе Markdown + разрешённые inline-теги:
   desc.innerHTML = t.descriptionHtml ? t.descriptionHtml : mdToHtml(t.description || '');
 
   document.getElementById('card').hidden = false;
   document.getElementById('pageStatus').textContent = '';
+
+  // reset AI box
+  document.getElementById('aiAnswer').hidden = true;
+  document.getElementById('aiStatus').textContent = '';
 
   await loadComments(id);
   await refreshLikes(id);
@@ -447,6 +479,8 @@ document.getElementById('commentForm').addEventListener('submit', async (e)=>{
     msg.textContent = 'Ошибка сети';
   }
 });
+
+document.getElementById('aiForm').addEventListener('submit', (e)=>{ e.preventDefault(); askAI(); });
 
 boot();
 </script>
