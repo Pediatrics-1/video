@@ -16,8 +16,13 @@
     --radius:16px;
     --shadow:0 10px 28px rgba(2,8,23,.06), 0 2px 10px rgba(2,8,23,.04);
   }
+
+  /* Лэйаут для «прижатого» футера */
+  html, body { height: 100%; margin: 0; display: flex; flex-direction: column; }
+  main.wrap { flex: 1; }
+
   *{box-sizing:border-box}
-  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  html,body{background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;-webkit-font-smoothing:antialiased}
   body{padding-bottom:80px}
 
   /* Header */
@@ -34,7 +39,7 @@
   .header-title{margin:0; font-weight:900; font-size:18px; line-height:1.35; letter-spacing:.1px; color:#0B2E5E}
   .header-sub{margin:4px 0 0; color:#0B2E5E; font-size:13px; font-weight:700}
 
-  /* Main grid — блоки разнесены как на скрине */
+  /* Main grid */
   main.wrap{ display:grid; gap:22px; }
 
   /* Общий стиль карточек */
@@ -46,15 +51,20 @@
     padding:16px;
   }
 
-  /* Заголовки внутри блоков (по необходимости) */
+  /* Заголовки внутри блоков */
   .block h2{
     margin:0 0 8px;
     font-size:22px; font-weight:900; color:#0B2E5E;
   }
 
   /* Селектор темы */
-  .theme-select{display:grid; gap:10px; margin-top:10px}
-  label{font-size:13px; color:#334155}
+  .theme-select label{
+    font-size:20px;
+    font-weight:900;
+    color:#0B2E5E;
+    margin-bottom:8px;
+    display:block;
+  }
   select{
     width:100%; padding:12px 14px;
     border:1px solid var(--line); border-radius:12px;
@@ -76,7 +86,7 @@
   .btn{
     appearance:none; border:1px solid var(--brand); background:var(--brand); color:#fff;
     padding:11px 14px; border-radius:12px; font-weight:800; display:inline-flex; align-items:center; gap:8px;
-    cursor:pointer; transition:transform .06s ease, box-shadow .2s ease, opacity .2s.ease;
+    cursor:pointer; transition:transform .06s ease, box-shadow .2s ease, opacity .2s ease;
     box-shadow:0 6px 16px rgba(10,102,194,.18);
   }
   .btn.secondary{background:#fff; color:var(--brand)}
@@ -86,17 +96,21 @@
 
   /* AI */
   .ai-note{font-size:13px; color:#334155; margin:6px 0 0}
-  .ai-answer{ border:1px solid var(--line); border-radius:12px; padding:12px; background:#F1F5FE; }
+  .ai-answer{ border:1px solid var(--line); border-radius:12px; padding:12px; background:#F1F5FE; margin-top:16px; }
   .ai-answer .muted{color:#64748B; font-size:14px}
 
-  /* Формы/комменты */
+  /* Кнопка во всю ширину и статус под ней */
+  .actions.vertical{ display:flex; flex-direction:column; align-items:stretch; }
+  .actions.vertical .btn{ width:100%; display:flex; justify-content:center; }
+  #aiStatus{ margin-top:6px; text-align:center; font-size:14px; color:#64748B; }
+
+  /* Комментарии */
   form.comment-form{display:grid; gap:10px}
   input[type="text"], textarea{
     width:100%; padding:12px; border:1px solid var(--line); border-radius:12px; background:#fff; color:#000; font:inherit
   }
   textarea{min-height:96px; resize:vertical}
   .status{margin-top:2px; font-size:14px; color:#64748B}
-
   .comments{ display:grid; gap:12px; }
   .comment-list{display:grid; gap:10px}
   .comment{ background:#F5F9FF; border:1px solid var(--line); border-radius:12px; padding:10px; }
@@ -104,12 +118,53 @@
   .empty{padding:10px;color:#64748B;font-size:14px}
 
   /* Footer */
-  footer{margin:0; background:transparent;}
-  .author{max-width:960px; margin:0 auto 24px; padding:8px 18px; color:#334155; font-size:13px; display:flex; align-items:center; gap:8px;}
-  .author .dot{width:6px;height:6px;border-radius:50%;background:#94a3b8;opacity:.6}
+  footer{ margin-top:auto; background:#ffffff; border-top:1px solid #E6ECF5; }
+  .footer-bar{
+    max-width:960px; margin:0 auto; padding:14px 18px;
+    font-size:14px; font-weight:500; color:#0B2E5E;
+    display:flex; align-items:center; justify-content:center; gap:6px;
+  }
+  .footer-bar a{ color:#0A66C2; text-decoration:none; font-weight:600; }
+  .footer-bar a:hover{ text-decoration:underline; }
+
+  /* ===== Fullscreen Splash / Прелоадер ===== */
+  #splash{
+    position: fixed; inset: 0; z-index: 9999;
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(10,102,194,.15), transparent 60%),
+      linear-gradient(180deg, #f7faff, #eef5ff);
+    display: grid; place-items: center;
+    transition: opacity .4s ease, visibility .4s ease;
+  }
+  #splash.hide{ opacity:0; visibility:hidden; }
+  .splash-inner{
+    display:grid; gap:16px; justify-items:center; text-align:center;
+    padding:24px 28px; border-radius:16px; background:#fff; border:1px solid var(--line);
+    box-shadow:var(--shadow);
+  }
+  .spinner{
+    width:48px; height:48px; border-radius:50%;
+    border:4px solid rgba(10,102,194,.15); border-top-color:var(--brand);
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  .splash-text{ font-size:16px; line-height:1.45; color:#0B2E5E; }
+  .splash-text strong{ font-size:18px; }
 </style>
 </head>
 <body>
+
+<!-- ===== Splash / Прелоадер ===== -->
+<div id="splash" aria-live="polite">
+  <div class="splash-inner">
+    <div class="spinner" aria-hidden="true"></div>
+    <div class="splash-text">
+      <strong>Готовим лучший контент для Вас</strong><br>
+      подождите пару секунд…
+    </div>
+  </div>
+</div>
+
 <header>
   <div class="wrap">
     <div class="header-row">
@@ -146,13 +201,14 @@
 
   <!-- Блок: ИИ -->
   <section class="block" id="block-ai" hidden>
-    <p class="ai-note">ИИ отвечает строго в рамках выбранной темы.</p>
+    <h2><strong>Задай вопрос ИИ по теме</strong></h2>
+    <p class="ai-note"></p>
     <form id="aiForm" class="comment-form">
       <textarea id="aiQuestion" placeholder="Сформулируйте вопрос по теме…" required></textarea>
-      <div class="actions">
-        <button id="askBtn" class="btn" type="submit">🤖 Спросить ИИ</button>
-        <span id="aiStatus" class="status"></span>
+      <div class="actions vertical">
+        <button id="askBtn" class="btn" type="submit">Задать вопрос</button>
       </div>
+      <span id="aiStatus" class="status"></span>
     </form>
     <div id="aiAnswer" class="ai-answer" hidden>
       <div class="muted">Ответ:</div>
@@ -185,17 +241,20 @@
 </main>
 
 <footer>
-  <div class="author">
-    <span class="dot"></span>
-    Бакоев Фаррух Саидчонович
+  <div class="footer-bar">
+    <span>Бакоев Фаррух</span> |
+    <a href="https://www.instagram.com/doc.farrukh" target="_blank" rel="noopener">doc.farrukh</a>
   </div>
 </footer>
 
 <script>
+/* отметим старт времени сплэша */
+window.__splashStart = performance.now();
+
 /* ===== URL вашего Apps Script (…/exec) ===== */
 const API_BASE = 'https://script.google.com/macros/s/AKfycbx8f3dhWJBgHmyldncwi-n4eHeegFfe7aRnpLtUeodK7AtcwiZFrn2_E6SPOqK0l6WgIg/exec'.trim();
 
-/* ===== Простая (безопасная) обработка Markdown в HTML (можно заменить своей) ===== */
+/* ===== Markdown → HTML ===== */
 function mdToHtml(md){
   if(!md) return '';
   let out = md
@@ -244,6 +303,20 @@ function formatDT(v){
   try{ const d=new Date(v); return d.toLocaleString(undefined,{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});}catch{return ''}
 }
 
+/* ===== Splash: скрытие ===== */
+function hideSplash(minDelayMs = 800){
+  const el = document.getElementById('splash');
+  if(!el) return;
+  const start = window.__splashStart || performance.now();
+  const wait = Math.max(0, minDelayMs - (performance.now() - start));
+  setTimeout(()=>{
+    el.classList.add('hide');
+    setTimeout(()=>{ el.style.display = 'none'; }, 450);
+  }, wait);
+}
+/* страховка — убрать сплэш через 6с в любом случае */
+setTimeout(()=>hideSplash(0), 6000);
+
 /* ===== State ===== */
 let TOPICS = [];
 let CURRENT = null;
@@ -278,7 +351,7 @@ async function loadComments(topicId){
   }
 }
 
-/* ===== Likes (1 раз на устройство, простая версия) ===== */
+/* ===== Likes ===== */
 function updateLikeUiDisabled(disabled){
   const btn = document.getElementById('likeBtn');
   btn.classList.toggle('disabled', !!disabled);
@@ -400,6 +473,7 @@ async function boot(){
     const data = await fetchJSON(`${API_BASE}?action=topics`);
     TOPICS = data.topics || [];
     if (TOPICS.length === 0){
+      hideSplash();
       return;
     }
     buildSelect(TOPICS);
@@ -408,8 +482,11 @@ async function boot(){
     const initialId = m ? decodeURIComponent(m[1]) : TOPICS[0].id;
     document.getElementById('topicSelect').value = initialId;
     await selectTopic(initialId);
+
+    hideSplash(); // контент готов
   }catch(err){
     console.error(err);
+    hideSplash(); // даже при ошибке скрыть сплэш
   }
 }
 
