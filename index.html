@@ -73,8 +73,54 @@
 
   /* Контент */
   .topic-title{ font-size:26px; font-weight:900; margin:0 0 8px; line-height:1.2; letter-spacing:.2px; color:#0B2E5E }
-  .player{ width:100%; aspect-ratio:16/9; background:#000; border-radius:12px; overflow:hidden; border:1px solid #0b2e5e14 }
+  .player{ width:100%; aspect-ratio:16/9; background:#000; border-radius:12px; overflow:hidden; border:1px solid #0b2e5e14; position:relative; }
   .player iframe, .player video{ width:100%; height:100%; display:block; border:0; }
+
+  /* ===== КАСТОМНЫЙ МИНИ-ПЛЕЕР ===== */
+  .vplayer{ position:relative; width:100%; height:100%; background:#000; }
+  .vplayer video{ width:100%; height:100%; display:block; object-fit:cover; background:#000; }
+
+  .vplayer .vp-hit{ position:absolute; inset:0; cursor:pointer; background:transparent; }
+  .vp-center{ position:absolute; inset:0; display:grid; place-items:center; pointer-events:none; }
+  .vp-bigplay{
+    width:66px; height:66px; border-radius:50%;
+    background:rgba(255,255,255,.9); border:1px solid var(--line);
+    display:grid; place-items:center; box-shadow:0 8px 24px rgba(2,8,23,.24);
+    transform:scale(1); transition:transform .12s ease, opacity .12s ease;
+  }
+  .vplayer.paused .vp-bigplay{ transform:scale(1); opacity:1; }
+  .vplayer.playing .vp-bigplay{ transform:scale(.9); opacity:0; }
+
+  .vp-controls{
+    position:absolute; left:0; right:0; bottom:0;
+    display:flex; align-items:center; gap:10px;
+    padding:8px 10px;
+    background:linear-gradient(180deg, rgba(2,8,23,0) 0%, rgba(2,8,23,.55) 100%);
+    transition:opacity .2s ease;
+  }
+  .vplayer.hide-ui .vp-controls{ opacity:0; pointer-events:none; }
+
+  .vp-btn{
+    width:36px; height:36px; border-radius:10px; border:1px solid rgba(255,255,255,.18);
+    background:rgba(255,255,255,.12); display:grid; place-items:center; cursor:pointer;
+    color:#fff;
+  }
+  .vp-btn:active{ transform:translateY(1px); }
+  .vp-icon{ width:18px; height:18px; display:block; }
+
+  .vp-time{ color:#fff; font-size:12px; min-width:84px; text-align:center; opacity:.9; }
+
+  .vp-range{
+    -webkit-appearance:none; appearance:none; height:4px; flex:1;
+    background:rgba(255,255,255,.35); border-radius:999px; cursor:pointer;
+  }
+  .vp-range::-webkit-slider-thumb{
+    -webkit-appearance:none; appearance:none; width:14px; height:14px; border-radius:50%;
+    background:#fff; border:1px solid rgba(2,8,23,.18);
+    box-shadow:0 2px 8px rgba(2,8,23,.25);
+    margin-top:-5px;
+  }
+  .vp-range::-moz-range-thumb{ width:14px; height:14px; border-radius:50%; background:#fff; border:none; }
 
   .desc{display:grid; gap:10px}
   .desc p{margin:0}
@@ -86,7 +132,7 @@
   .btn{
     appearance:none; border:1px solid var(--brand); background:var(--brand); color:#fff;
     padding:11px 14px; border-radius:12px; font-weight:800; display:inline-flex; align-items:center; gap:8px;
-    cursor:pointer; transition:transform .06s ease, box-shadow .2s ease, opacity .2s ease;
+    cursor:pointer; transition:transform .06s.ease, box-shadow .2s ease, opacity .2s ease;
     box-shadow:0 6px 16px rgba(10,102,194,.18);
   }
   .btn.secondary{background:#fff; color:var(--brand)}
@@ -99,12 +145,10 @@
   .ai-answer{ border:1px solid var(--line); border-radius:12px; padding:12px; background:#F1F5FE; margin-top:16px; }
   .ai-answer .muted{color:#64748B; font-size:14px}
 
-  /* Кнопка во всю ширину и статус под ней */
   .actions.vertical{ display:flex; flex-direction:column; align-items:stretch; }
   .actions.vertical .btn{ width:100%; display:flex; justify-content:center; }
   #aiStatus{ margin-top:6px; text-align:center; font-size:14px; color:#64748B; }
 
-  /* Комментарии */
   form.comment-form{display:grid; gap:10px}
   input[type="text"], textarea{
     width:100%; padding:12px; border:1px solid var(--line); border-radius:12px; background:#fff; color:#000; font:inherit
@@ -142,6 +186,11 @@
     padding:24px 28px; border-radius:16px; background:#fff; border:1px solid var(--line);
     box-shadow:var(--shadow);
   }
+  /* Картинка без теней */
+  .splash-img{
+    width:160px; height:auto; object-fit:contain; display:block;
+    border:none; box-shadow:none; background:transparent;
+  }
   .spinner{
     width:48px; height:48px; border-radius:50%;
     border:4px solid rgba(10,102,194,.15); border-top-color:var(--brand);
@@ -157,6 +206,11 @@
 <!-- ===== Splash / Прелоадер ===== -->
 <div id="splash" aria-live="polite">
   <div class="splash-inner">
+    <img
+      class="splash-img"
+      src="https://s00.yaplakal.com/pics/pics_preview/2/8/8/20122882.jpg"
+      alt="Загрузка"
+    >
     <div class="spinner" aria-hidden="true"></div>
     <div class="splash-text">
       <strong>Готовим лучший контент для Вас</strong><br>
@@ -219,7 +273,7 @@
   <!-- Блок: Нравится / Поделиться / Ваш комментарий / Комментарии -->
   <section class="block" id="block-social" hidden>
     <div class="actions" style="margin-bottom:8px">
-      <button id="likeBtn" class="btn" type="button">👍 Нравится <span id="likeCount" class="like-count">0</span></button>
+      <button id="likeBtn" class="btn" type="button">👍 Нравится <span class="like-count" id="likeCount">0</span></button>
       <button id="shareBtn" class="btn secondary" type="button">↗ Поделиться</button>
     </div>
 
@@ -287,20 +341,147 @@ async function fetchJSON(url, options){
   if (!res.ok) throw new Error('HTTP '+res.status);
   return res.json();
 }
+
+/* ====== Рендер видео / плеера ====== */
 function renderPlayer(embed){
   const wrap = document.getElementById('player');
   wrap.innerHTML = '';
   if (!embed || !embed.type) return;
+
   if (['youtube','vimeo','drive'].includes(embed.type)) {
-    wrap.append(el('iframe', { src: embed.src, allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share', allowfullscreen:'' }));
+    wrap.append(el('iframe', {
+      src: embed.src,
+      allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share',
+      allowfullscreen:''
+    }));
   } else if (embed.type === 'video') {
-    wrap.append(el('video', { src: embed.src, controls:'' }));
+    createCustomPlayer(wrap, embed.src, embed.poster);
   } else {
     wrap.append(el('a', { href: embed.src, target:'_blank', rel:'noopener', class:'status' }, ['Открыть видео']));
   }
 }
-function formatDT(v){
-  try{ const d=new Date(v); return d.toLocaleString(undefined,{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});}catch{return ''}
+
+/* ====== КАСТОМНЫЙ ПЛЕЕР ====== */
+function createIcon(pathD){
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('viewBox','0 0 24 24'); svg.classList.add('vp-icon');
+  const p = document.createElementNS('http://www.w3.org/2000/svg','path');
+  p.setAttribute('d', pathD); p.setAttribute('fill','currentColor');
+  svg.appendChild(p); return svg;
+}
+function formatTime(s){
+  s = Math.max(0, Math.floor(s||0));
+  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
+  if (h>0) return `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+  return `${m}:${String(sec).padStart(2,'0')}`;
+}
+function createCustomPlayer(container, src, poster){
+  const root = el('div', { class:'vplayer paused' });
+  const video = document.createElement('video');
+  video.src = src;
+  if (poster) video.poster = poster;
+  video.playsInline = true;
+
+  const hit = el('div', { class:'vp-hit' });
+
+  const center = el('div', { class:'vp-center' });
+  const bigPlay = el('div', { class:'vp-bigplay' });
+  bigPlay.append(createIcon("M8 5v14l11-7z"));
+  center.append(bigPlay);
+
+  const bar = el('div', { class:'vp-controls' });
+
+  const btnPlay = el('button', { class:'vp-btn', type:'button', 'aria-label':'Воспроизвести/Пауза' });
+  const icoPlay = createIcon("M8 5v14l11-7z");
+  const icoPause = createIcon("M6 5h4v14H6zM14 5h4v14h-4z");
+  btnPlay.append(icoPlay);
+
+  const time = el('div', { class:'vp-time' }, ['0:00 / 0:00']);
+
+  const range = document.createElement('input');
+  range.type = 'range'; range.min = 0; range.max = 1000; range.value = 0; range.className = 'vp-range';
+  range.setAttribute('aria-label','Позиция воспроизведения');
+
+  const btnMute = el('button', { class:'vp-btn', type:'button', 'aria-label':'Звук вкл/выкл' });
+  const icoVol = createIcon("M5 9v6h4l5 4V5l-5 4H5z");
+  const icoMute = createIcon("M16.5 12l3.5 3.5-1.5 1.5L15 13.5 11.5 17l-1.5-1.5L13.5 12 10 8.5 11.5 7l3.5 3.5 3.5-3.5L20.5 8.5 17 12z");
+  btnMute.append(icoVol);
+
+  const btnFs = el('button', { class:'vp-btn', type:'button', 'aria-label':'Полноэкранный режим' });
+  const icoFs = createIcon("M7 14H5v5h5v-2H7v-3zm0-4h3V7h2v5H7V10zm7 9h5v-5h-2v3h-3v2zm3-13V3h-5v2h3v3h2z");
+  btnFs.append(icoFs);
+
+  bar.append(btnPlay, time, range, btnMute, btnFs);
+  root.append(video, hit, center, bar);
+  container.append(root);
+
+  let hideTimer = null;
+  const showUI = ()=>{
+    root.classList.remove('hide-ui');
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(()=>root.classList.add('hide-ui'), 2000);
+  };
+  const togglePlay = ()=>{
+    if (video.paused) video.play(); else video.pause();
+  };
+  const updatePlayState = ()=>{
+    if (video.paused) {
+      root.classList.add('paused'); root.classList.remove('playing');
+      btnPlay.replaceChildren(icoPlay.cloneNode(true));
+    } else {
+      root.classList.add('playing'); root.classList.remove('paused');
+      btnPlay.replaceChildren(icoPause.cloneNode(true));
+      showUI();
+    }
+  };
+  const updateTime = ()=>{
+    const cur = video.currentTime || 0;
+    const dur = video.duration || 0;
+    time.textContent = `${formatTime(cur)} / ${dur?formatTime(dur):'0:00'}`;
+    if (dur>0 && !rangeDragging) {
+      range.value = Math.round(cur/dur*1000);
+    }
+  };
+
+  btnPlay.addEventListener('click', togglePlay);
+  bigPlay.addEventListener('click', (e)=>{ e.stopPropagation(); togglePlay(); });
+  hit.addEventListener('click', togglePlay);
+  [root, bar].forEach(elm=>{
+    elm.addEventListener('mousemove', showUI, {passive:true});
+    elm.addEventListener('touchstart', showUI, {passive:true});
+  });
+
+  video.addEventListener('play', updatePlayState);
+  video.addEventListener('pause', updatePlayState);
+  video.addEventListener('timeupdate', updateTime);
+  video.addEventListener('loadedmetadata', updateTime);
+  video.addEventListener('ended', ()=>{ root.classList.remove('hide-ui'); });
+
+  let rangeDragging = false;
+  range.addEventListener('input', ()=>{
+    const dur = video.duration||0;
+    if (dur>0){
+      const to = (range.value/1000)*dur;
+      video.currentTime = to;
+      updateTime();
+    }
+  });
+  range.addEventListener('mousedown', ()=>rangeDragging=true);
+  range.addEventListener('mouseup', ()=>{ rangeDragging=false; });
+
+  btnMute.addEventListener('click', ()=>{
+    video.muted = !video.muted;
+    btnMute.replaceChildren( (video.muted ? icoMute : icoVol).cloneNode(true) );
+  });
+
+  btnFs.addEventListener('click', async ()=>{
+    try{
+      if (!document.fullscreenElement) await root.requestFullscreen();
+      else await document.exitFullscreen();
+    }catch{}
+  });
+
+  showUI();
 }
 
 /* ===== Splash: скрытие ===== */
@@ -314,7 +495,6 @@ function hideSplash(minDelayMs = 800){
     setTimeout(()=>{ el.style.display = 'none'; }, 450);
   }, wait);
 }
-/* страховка — убрать сплэш через 6с в любом случае */
 setTimeout(()=>hideSplash(0), 6000);
 
 /* ===== State ===== */
@@ -349,6 +529,9 @@ async function loadComments(topicId){
   }catch(err){
     box.innerHTML = '<div class="empty" style="color:#b91c1c">Не удалось загрузить комментарии.</div>';
   }
+}
+function formatDT(v){
+  try{ const d=new Date(v); return d.toLocaleString(undefined,{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});}catch{return ''}
 }
 
 /* ===== Likes ===== */
@@ -442,22 +625,18 @@ async function selectTopic(id){
   if (!t) return;
   CURRENT = t;
 
-  // Заголовок и видео
   document.getElementById('topicTitle').textContent = t.title;
   renderPlayer(t.embed);
   document.getElementById('block-video').hidden = false;
 
-  // Описание
   const desc = document.getElementById('desc');
   desc.innerHTML = t.descriptionHtml ? t.descriptionHtml : mdToHtml(t.description || '');
   document.getElementById('block-desc').hidden = false;
 
-  // ИИ
   document.getElementById('aiAnswer').hidden = true;
   document.getElementById('aiStatus').textContent = '';
   document.getElementById('block-ai').hidden = false;
 
-  // Соц/комментарии
   document.getElementById('block-social').hidden = false;
 
   await loadComments(id);
@@ -483,10 +662,10 @@ async function boot(){
     document.getElementById('topicSelect').value = initialId;
     await selectTopic(initialId);
 
-    hideSplash(); // контент готов
+    hideSplash();
   }catch(err){
     console.error(err);
-    hideSplash(); // даже при ошибке скрыть сплэш
+    hideSplash();
   }
 }
 
