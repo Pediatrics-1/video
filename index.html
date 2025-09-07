@@ -71,15 +71,6 @@
   .desc ul{margin:2px 0 0; padding-left:22px}
   .desc a{color:var(--brand); text-decoration:underline}
 
-
-.qa-list .empty {
-  text-align:center;
-  color:#64748B;
-  font-size:14px;
-  padding:14px;
-}
-
-
   /* Кнопки */
   .actions{display:flex; gap:10px; flex-wrap:wrap}
   .btn{
@@ -101,11 +92,22 @@
 
   /* QA (всегда открыты) */
   .qa-wrap{ margin-top:12px; }
-  .qa-title{ font-size:18px; font-weight:900; color:#0B2E5E; margin-bottom:20px; }
+  .qa-title{ font-size:18px; font-weight:900; color:#0B2E5E; margin-bottom:16px; }
   .qa-list{ display:grid; gap:10px; }
   .qa-item{ background:#F5F9FF; border:1px solid var(--line); border-radius:12px; padding:12px; }
   .qa-q{ font-weight:800; color:#0B2E5E; margin:0 0 6px; }
   .qa-a{ margin:0; color:#0F172A; }
+
+  /* Состояния Q&A */
+  .qa-list .empty{
+    text-align:center;
+    color:#64748B;
+    font-size:14px;
+    padding:14px;
+    display:grid;
+    gap:6px;
+    justify-items:center;
+  }
 
   /* Комментарии */
   form.comment-form{display:grid; gap:10px}
@@ -151,6 +153,11 @@
     width:48px; height:48px; border-radius:50%;
     border:4px solid rgba(10,102,194,.15); border-top-color:var(--brand);
     animation: spin 1s linear infinite;
+  }
+  /* маленький спиннер для QA */
+  .spinner--sm{
+    width:24px; height:24px;
+    border-width:3px;
   }
   @keyframes spin{ to{ transform:rotate(360deg); } }
   .splash-text{ font-size:16px; line-height:1.45; color:#0B2E5E; }
@@ -219,19 +226,17 @@
       <div id="aiAnswerBody"></div>
     </div>
 
-    <!-- Вопросы от студентов ИИ -->
-<hr style="margin:24px 0; border:none; border-top:1px solid var(--line)">
-
-<div class="qa-wrap">
-  <div class="qa-title">Вопросы ИИ</div>
-  <div id="qaBox" class="qa-list">
-    <div class="empty">
-      <div class="spinner" style="margin:0 auto 6px"></div>
-      Ищем ваши вопросы ИИ…
+    <!-- Вопросы студентов ИИ -->
+    <hr style="margin:24px 0; border:none; border-top:1px solid var(--line)">
+    <div class="qa-wrap">
+      <div class="qa-title">Вопросы ИИ</div>
+      <div id="qaBox" class="qa-list">
+        <div class="empty">
+          <div class="spinner spinner--sm" aria-hidden="true"></div>
+          Ищем ваши вопросы ИИ…
+        </div>
+      </div>
     </div>
-  </div>
-</div>
-
   </section>
 
   <!-- Социальные -->
@@ -272,19 +277,31 @@ window.__splashStart = performance.now();
 /* ===== URL вашего Apps Script ===== */
 const API_BASE = 'https://script.google.com/macros/s/AKfycbw5acuRWLeQR9tnVnTat7oSNY_9GVvXrfYnbNJSwnSMSqzoIX4pyRNorhubKhqCLK2gJQ/exec'.trim();
 
-/* ===== Markdown → HTML ===== */
+/* ===== Markdown → HTML (безопасно) ===== */
 function mdToHtml(md){
   if(!md) return '';
-  let out = md
+  // экранируем html
+  md = String(md).replace(/[&<>]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[s]));
+
+  // заголовки
+  md = md
     .replace(/^###\s+(.*)$/gm,'<h3>$1</h3>')
     .replace(/^##\s+(.*)$/gm,'<h2>$1</h2>')
-    .replace(/^#\s+(.*)$/gm,'<h1>$1</h1>')
+    .replace(/^#\s+(.*)$/gm,'<h1>$1</h1>');
+
+  // ссылки [текст](url)
+  md = md.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+
+  // **жирный** и *курсив*
+  md = md
     .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
-    .replace(/\*([^*]+)\*/g,'<em>$1</em>')
-    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
-  out = out.split(/\n{2,}/).map(p=>{
-    if(/^<h\d/.test(p.trim())) return p;
-    return '<p>'+p.trim().replace(/\n/g,'<br>')+'</p>';
+    .replace(/\*([^*]+)\*/g,'<em>$1</em>');
+
+  // параграфы
+  const out = md.split(/\n{2,}/).map(p=>{
+    const t = p.trim();
+    if(!t) return '';
+    return /^<h\d/i.test(t) ? t : '<p>'+t.replace(/\n/g,'<br>')+'</p>';
   }).join('');
   return out;
 }
@@ -358,13 +375,12 @@ function buildSelect(topics){
 let qaLoadedFor = null;
 async function loadQA(topicId){
   const box = document.getElementById('qaBox');
-  // показываем спиннер сразу
-  box.innerHTML = '<div class="empty"><div class="spinner" style="margin:0 auto 6px"></div>Ищем ваши вопросы ИИ…</div>';
+  // состояние загрузки
+  box.innerHTML = '<div class="empty"><div class="spinner spinner--sm" aria-hidden="true"></div>Ищем ваши вопросы ИИ…</div>';
 
-  try {
+  try{
     const data = await fetchJSON(`${API_BASE}?action=qa&topicId=${encodeURIComponent(topicId)}`);
     const items = (data && data.qa) || [];
-
     box.innerHTML = ''; // очищаем после загрузки
 
     if (!items.length){
@@ -375,7 +391,7 @@ async function loadQA(topicId){
 
     items.forEach(row=>{
       const q = String(row.q||'').trim();
-      const a = mdToHtml(String(row.a||'').trim());
+      const a = mdToHtml(String(row.a||'').trim()); // markdown → html
       box.append(
         el('div',{class:'qa-item'},[
           el('div',{class:'qa-q'},['Вопрос: ', q]),
@@ -388,7 +404,6 @@ async function loadQA(topicId){
     box.innerHTML = '<div class="empty" style="color:#b91c1c">Ошибка загрузки вопросов.</div>';
   }
 }
-
 
 /* ===== Comments ===== */
 async function loadComments(topicId){
@@ -476,8 +491,8 @@ function showAiAnswer(htmlArray){
     body.appendChild(wrap);
   });
   box.hidden = false;
+  box.scrollIntoView({ behavior:'smooth', block:'start' });
 }
-
 async function askAI(){
   if (!CURRENT) return;
   const qEl = document.getElementById('aiQuestion');
@@ -494,13 +509,13 @@ async function askAI(){
     const res = await fetch(API_BASE, { method:'POST', body: fd });
     const json = await res.json();
     if (json.ok){
-  let answers = [];
-  if (Array.isArray(json.answers)) {
-    answers = json.answers.map(a => mdToHtml((a || '').trim()));
-  } else {
-    answers = [ mdToHtml((json.answer || '').trim()) ];
-  }
-  showAiAnswer(answers);
+      let answers = [];
+      if (Array.isArray(json.answers)) {
+        answers = json.answers.map(a => mdToHtml((a || '').trim()));
+      } else {
+        answers = [ mdToHtml((json.answer || '').trim()) ];
+      }
+      showAiAnswer(answers);
 
       setAiBusy(false, 'Готово');
       qEl.value = '';
@@ -512,6 +527,14 @@ async function askAI(){
     setAiBusy(false, 'Ошибка сети');
   }
 }
+
+/* Enter = отправить, Shift+Enter = перенос строки */
+document.getElementById('aiQuestion').addEventListener('keydown', (e)=>{
+  if (e.key === 'Enter' && !e.shiftKey){
+    e.preventDefault();
+    document.getElementById('askBtn').click();
+  }
+});
 
 /* ===== Select topic ===== */
 async function selectTopic(id){
@@ -543,7 +566,7 @@ async function selectTopic(id){
 
   // QA
   qaLoadedFor = null;
-  document.getElementById('qaBox').innerHTML = '';
+  document.getElementById('qaBox').innerHTML = '<div class="empty"><div class="spinner spinner--sm" aria-hidden="true"></div>Ищем ваши вопросы ИИ…</div>';
   await loadQA(id);
 
   history.replaceState(null, '', '#topic=' + encodeURIComponent(id));
