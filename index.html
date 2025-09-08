@@ -38,7 +38,7 @@
   .header-title{margin:0; font-weight:900; font-size:18px; line-height:1.35; letter-spacing:.1px; color:#0B2E5E}
   .header-sub{margin:4px 0 0; color:#0B2E5E; font-size:13px; font-weight:700}
 
-  /* Карточки */
+  /* Блоки */
   main.wrap{ display:grid; gap:22px; }
   .block{
     background:var(--panel);
@@ -59,7 +59,7 @@
     background:#fff; color:#0f172a; font:inherit; outline:none;
   }
 
-  /* Контент */
+  /* Контент материала */
   .topic-title{ font-size:26px; font-weight:900; margin:0 0 8px; line-height:1.2; letter-spacing:.2px; color:#0B2E5E }
   .player{ width:100%; aspect-ratio:16/9; background:#000; border-radius:12px; overflow:hidden; border:1px solid #0b2e5e14; }
   .player iframe, .player video{ width:100%; height:100%; display:block; border:0; }
@@ -98,18 +98,7 @@
   .qa-q{ font-weight:800; color:#0B2E5E; margin:0 0 6px; }
   .qa-a{ margin:0; color:#0F172A; }
 
-  /* Состояния Q&A */
-  .qa-list .empty{
-    text-align:center;
-    color:#64748B;
-    font-size:14px;
-    padding:14px;
-    display:grid;
-    gap:6px;
-    justify-items:center;
-  }
-
-  /* Комментарии */
+  /* Комментарии и соц */
   form.comment-form{display:grid; gap:10px}
   input[type="text"], textarea{
     width:100%; padding:12px; border:1px solid var(--line); border-radius:12px; background:#fff; color:#000; font:inherit
@@ -154,14 +143,39 @@
     border:4px solid rgba(10,102,194,.15); border-top-color:var(--brand);
     animation: spin 1s linear infinite;
   }
-  /* маленький спиннер для QA */
-  .spinner--sm{
-    width:24px; height:24px;
-    border-width:3px;
-  }
+  .spinner--sm{ width:24px; height:24px; border-width:3px; }
   @keyframes spin{ to{ transform:rotate(360deg); } }
   .splash-text{ font-size:16px; line-height:1.45; color:#0B2E5E; }
   .splash-text strong{ font-size:18px; }
+
+  /* --- Вкладки --- */
+  .tabs{display:flex; gap:8px; flex-wrap:wrap}
+  .tab{
+    appearance:none; border:1px solid var(--line); background:#fff; color:var(--text);
+    padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:800
+  }
+  .tab.active{ background:var(--brand); color:#fff; border-color:transparent; box-shadow:0 6px 16px rgba(10,102,194,.18)}
+
+  /* --- Карточки --- */
+  .stage{display:grid; place-items:center}
+  .card{ width:min(720px,100%); height:420px; position:relative; perspective:1200px; }
+  .card-inner{position:absolute; inset:0; transform-style:preserve-3d; transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+  .card.is-flipped .card-inner{ transform:rotateY(180deg) }
+  .face{
+    position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden;
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    box-shadow:var(--shadow); display:flex; flex-direction:column; justify-content:center; align-items:center;
+    text-align:center; padding:28px;
+  }
+  .back{ transform:rotateY(180deg) }
+  .face h2{ margin:0 0 10px; font-size:clamp(18px,2.2vw,24px) }
+  .face p{ margin:0; font-size:clamp(16px,2vw,20px) }
+  .hint{margin-top:14px; color:var(--muted); font-size:14px}
+  .toolbar{display:flex; align-items:center; gap:10px; justify-content:space-between; margin-top:12px}
+  .btn.ghost{background:#fff; color:var(--brand); border:1px solid var(--line)}
+  .progress{width:100%; height:8px; background:#EEF2FF; border-radius:999px; overflow:hidden; border:1px solid var(--line); margin-top:10px}
+  .bar{ height:100%; width:0%; background:linear-gradient(90deg,var(--brand),#22C55E); transition:width .3s }
+  @media (max-width:640px){ .card{height:380px} }
 </style>
 </head>
 <body>
@@ -200,6 +214,14 @@
     </div>
   </section>
 
+  <!-- Вкладки -->
+  <section class="block" id="block-tabs">
+    <div class="tabs">
+      <button class="tab active" id="tab-material">Материал</button>
+      <button class="tab" id="tab-cards">Карточки с вопросами</button>
+    </div>
+  </section>
+
   <!-- Видео -->
   <section class="block" id="block-video" hidden>
     <h2 class="topic-title" id="topicTitle">Тема</h2>
@@ -211,7 +233,7 @@
     <div id="desc" class="desc"></div>
   </section>
 
-  <!-- ИИ -->
+  <!-- ИИ чат по теме -->
   <section class="block" id="block-ai" hidden>
     <h2><strong>Задай вопрос ИИ по теме</strong></h2>
     <form id="aiForm" class="comment-form">
@@ -226,7 +248,6 @@
       <div id="aiAnswerBody"></div>
     </div>
 
-    <!-- Вопросы студентов ИИ -->
     <hr style="margin:24px 0; border:none; border-top:1px solid var(--line)">
     <div class="qa-wrap">
       <div class="qa-title">Вопросы ИИ</div>
@@ -237,6 +258,46 @@
         </div>
       </div>
     </div>
+  </section>
+
+  <!-- КАРТОЧКИ -->
+  <section class="block" id="block-cards" hidden>
+    <h2 class="topic-title">Проверь себя</h2>
+
+    <div id="cardsStatus" class="status" style="margin-bottom:10px"></div>
+
+    <div class="toolbar">
+      <div>
+        <button class="btn ghost" id="prevCard">←</button>
+        <button class="btn" id="flipCard">Перевернуть</button>
+        <button class="btn ghost" id="nextCard">→</button>
+        <button class="btn ghost" id="shuffleCards">Перемешать</button>
+      </div>
+      <div>
+        <span class="status"><strong id="cardsCounter">0/0</strong></span>
+        <button class="btn" id="genCards">Сгенерировать вопросы ИИ</button>
+      </div>
+    </div>
+
+    <div class="stage" style="margin-top:10px">
+      <div class="card" id="cardBox" tabindex="0" aria-live="polite">
+        <div class="card-inner">
+          <section class="face front">
+            <h2 id="qTitle">Вопрос</h2>
+            <p id="qText">Выберите тему и загрузите вопросы…</p>
+            <div class="hint">Клик или «Пробел» — перевернуть</div>
+          </section>
+          <section class="face back">
+            <h2>Ответ</h2>
+            <p id="aText">—</p>
+            <div class="hint">Клик или «Пробел» — вернуться</div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div class="progress"><div class="bar" id="cardsBar"></div></div>
+    <div class="status" style="margin-top:8px">Управление: Пробел — перевернуть · ←/→ — листать</div>
   </section>
 
   <!-- Социальные -->
@@ -280,24 +341,15 @@ const API_BASE = 'https://script.google.com/macros/s/AKfycbw5acuRWLeQR9tnVnTat7o
 /* ===== Markdown → HTML (безопасно) ===== */
 function mdToHtml(md){
   if(!md) return '';
-  // экранируем html
   md = String(md).replace(/[&<>]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[s]));
-
-  // заголовки
   md = md
     .replace(/^###\s+(.*)$/gm,'<h3>$1</h3>')
     .replace(/^##\s+(.*)$/gm,'<h2>$1</h2>')
     .replace(/^#\s+(.*)$/gm,'<h1>$1</h1>');
-
-  // ссылки [текст](url)
   md = md.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
-
-  // **жирный** и *курсив*
   md = md
     .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
     .replace(/\*([^*]+)\*/g,'<em>$1</em>');
-
-  // параграфы
   const out = md.split(/\n{2,}/).map(p=>{
     const t = p.trim();
     if(!t) return '';
@@ -323,12 +375,11 @@ async function fetchJSON(url, options){
   return res.json();
 }
 
-/* ===== Видео: стандартный плеер/встройка ===== */
+/* ===== Видео ===== */
 function renderPlayer(embed){
   const wrap = document.getElementById('player');
   wrap.innerHTML = '';
   if (!embed || !embed.type) return;
-
   if (['youtube','vimeo','drive'].includes(embed.type)) {
     wrap.append(el('iframe', {
       src: embed.src,
@@ -338,7 +389,7 @@ function renderPlayer(embed){
   } else if (embed.type === 'video') {
     const v = document.createElement('video');
     v.src = embed.src;
-    v.controls = true;            // стандартные контролы
+    v.controls = true;
     v.playsInline = true;
     wrap.append(v);
   } else {
@@ -346,15 +397,15 @@ function renderPlayer(embed){
   }
 }
 
-/* ===== Splash: скрытие ===== */
+/* ===== Splash hide ===== */
 function hideSplash(minDelayMs = 800){
-  const el = document.getElementById('splash');
-  if(!el) return;
+  const elx = document.getElementById('splash');
+  if(!elx) return;
   const start = window.__splashStart || performance.now();
   const wait = Math.max(0, minDelayMs - (performance.now() - start));
   setTimeout(()=>{
-    el.classList.add('hide');
-    setTimeout(()=>{ el.style.display = 'none'; }, 450);
+    elx.classList.add('hide');
+    setTimeout(()=>{ elx.style.display = 'none'; }, 450);
   }, wait);
 }
 setTimeout(()=>hideSplash(0), 6000);
@@ -371,27 +422,23 @@ function buildSelect(topics){
   select.addEventListener('change', ()=> selectTopic(select.value));
 }
 
-/* ===== QA (всегда открыты) ===== */
+/* ===== QA ===== */
 let qaLoadedFor = null;
 async function loadQA(topicId){
   const box = document.getElementById('qaBox');
-  // состояние загрузки
   box.innerHTML = '<div class="empty"><div class="spinner spinner--sm" aria-hidden="true"></div>Ищем ваши вопросы ИИ…</div>';
-
   try{
     const data = await fetchJSON(`${API_BASE}?action=qa&topicId=${encodeURIComponent(topicId)}`);
     const items = (data && data.qa) || [];
-    box.innerHTML = ''; // очищаем после загрузки
-
+    box.innerHTML = '';
     if (!items.length){
       box.innerHTML = '<div class="empty">Пока что вопросов нет — задай вопрос первым!</div>';
       qaLoadedFor = topicId;
       return;
     }
-
     items.forEach(row=>{
       const q = String(row.q||'').trim();
-      const a = mdToHtml(String(row.a||'').trim()); // markdown → html
+      const a = mdToHtml(String(row.a||'').trim());
       box.append(
         el('div',{class:'qa-item'},[
           el('div',{class:'qa-q'},['Вопрос: ', q]),
@@ -413,7 +460,7 @@ async function loadComments(topicId){
     const data = await fetchJSON(`${API_BASE}?action=comments&topicId=${encodeURIComponent(topicId)}`);
     box.innerHTML = '';
     if (!data.comments || data.comments.length === 0){
-      return; // без «станьте первым»
+      return;
     }
     data.comments.forEach(c=>{
       box.append(el('div', { class:'comment' }, [
@@ -472,7 +519,7 @@ async function shareCurrent(){
   }
 }
 
-/* ===== AI ===== */
+/* ===== AI чат ===== */
 function setAiBusy(busy, msg){
   const btn = document.getElementById('askBtn');
   const st  = document.getElementById('aiStatus');
@@ -519,7 +566,7 @@ async function askAI(){
 
       setAiBusy(false, 'Готово');
       qEl.value = '';
-      await loadQA(CURRENT.id); // обновим список
+      await loadQA(CURRENT.id);
     } else {
       setAiBusy(false, 'Ошибка: ' + (json.error || 'неизвестно'));
     }
@@ -527,13 +574,152 @@ async function askAI(){
     setAiBusy(false, 'Ошибка сети');
   }
 }
-
-/* Enter = отправить, Shift+Enter = перенос строки */
 document.getElementById('aiQuestion').addEventListener('keydown', (e)=>{
   if (e.key === 'Enter' && !e.shiftKey){
     e.preventDefault();
     document.getElementById('askBtn').click();
   }
+});
+
+/* ===== Вкладки ===== */
+let ACTIVE_TAB = 'material';
+function showTab(tab){
+  ACTIVE_TAB = tab;
+  document.getElementById('tab-material').classList.toggle('active', tab==='material');
+  document.getElementById('tab-cards').classList.toggle('active', tab==='cards');
+  const materialBlocks = ['block-video','block-desc','block-ai','block-social'];
+  materialBlocks.forEach(id => document.getElementById(id).hidden = (tab!=='material'));
+  document.getElementById('block-cards').hidden = (tab!=='cards');
+  if (tab==='cards' && CURRENT){ ensureCardsLoaded(CURRENT.id); }
+}
+document.getElementById('tab-material').addEventListener('click', ()=>showTab('material'));
+document.getElementById('tab-cards').addEventListener('click', ()=>showTab('cards'));
+
+/* ===== КАРТОЧКИ ===== */
+let CARDS = [];        // [{q,a}]
+let orderIdx = [];
+let ci = 0;
+let flippedCard = false;
+
+const CELS = {
+  box: document.getElementById('cardBox'),
+  qTitle: document.getElementById('qTitle'),
+  qText: document.getElementById('qText'),
+  aText: document.getElementById('aText'),
+  counter: document.getElementById('cardsCounter'),
+  bar: document.getElementById('cardsBar'),
+  status: document.getElementById('cardsStatus'),
+  btnPrev: document.getElementById('prevCard'),
+  btnNext: document.getElementById('nextCard'),
+  btnFlip: document.getElementById('flipCard'),
+  btnShuffle: document.getElementById('shuffleCards'),
+  btnGen: document.getElementById('genCards'),
+};
+
+function setCardFlipped(v){
+  flippedCard = v;
+  CELS.box.classList.toggle('is-flipped', flippedCard);
+}
+function renderCard(){
+  if (!CARDS.length){
+    CELS.qTitle.textContent = 'Вопрос';
+    CELS.qText.textContent = 'В этой теме пока нет карточек.';
+    CELS.aText.textContent = 'Нажмите «Сгенерировать вопросы ИИ».';
+    CELS.counter.textContent = '0/0';
+    CELS.bar.style.width = '0%';
+    return;
+  }
+  const k = orderIdx[ci];
+  const item = CARDS[k];
+  CELS.qTitle.textContent = `Вопрос ${ci+1}`;
+  CELS.qText.textContent = item.q;
+  CELS.aText.textContent = item.a;
+  CELS.counter.textContent = `${ci+1}/${CARDS.length}`;
+  CELS.bar.style.width = `${((ci+1)/CARDS.length)*100}%`;
+}
+function shuffleOrder(){
+  orderIdx = [...CARDS.keys()];
+  for (let j=orderIdx.length-1;j>0;j--){
+    const k = Math.floor(Math.random()*(j+1));
+    [orderIdx[j], orderIdx[k]] = [orderIdx[k], orderIdx[j]];
+  }
+  ci = 0;
+}
+async function loadCards(topicId){
+  try{
+    CELS.status.textContent = 'Загружаем карточки…';
+    const data = await fetchJSON(`${API_BASE}?action=flashcards&topicId=${encodeURIComponent(topicId)}`);
+    const items = (data && data.cards) || [];
+    CARDS = items.filter(x=>x && x.q && x.a).map(x=>({q:String(x.q), a:String(x.a)}));
+    shuffleOrder();
+    setCardFlipped(false);
+    renderCard();
+    CELS.status.textContent = CARDS.length ? '' : 'Карточки не найдены.';
+  }catch{
+    CELS.status.textContent = 'Не удалось загрузить карточки.';
+  }
+}
+async function generateCards(topic){
+  const t = topic || CURRENT;
+  if (!t) return;
+  CELS.status.textContent = 'Генерируем вопросы…';
+  CELS.btnGen.classList.add('disabled'); CELS.btnGen.disabled = true;
+
+  const prompt = [
+    `Сгенерируй 12 пар "вопрос-ответ" в формате JSON-массива.`,
+    `Тема: ${t.title}.`,
+    `Опирайся на описание (может быть Markdown):`,
+    (t.description || '').slice(0, 4000),
+    `Формат ВЫВОДА строго такой (только JSON, без пояснений):`,
+    `[{"q":"Короткий чёткий вопрос?","a":"Точный ответ."}]`
+  ].join('\n');
+
+  try{
+    const fd = new FormData();
+    fd.append('action','ask');
+    fd.append('topicId', t.id);
+    fd.append('question', prompt);
+
+    const res = await fetch(API_BASE, { method:'POST', body: fd });
+    const json = await res.json();
+
+    const raw = Array.isArray(json.answers) ? json.answers.join('\n') : (json.answer || '');
+    const match = raw.match(/\[[\s\S]*\]/);
+    const arr = match ? JSON.parse(match[0]) : [];
+    CARDS = arr.filter(x=>x && x.q && x.a).map(x=>({q:String(x.q), a:String(x.a)}));
+    if (!CARDS.length) throw new Error('empty');
+
+    shuffleOrder();
+    setCardFlipped(false);
+    renderCard();
+    CELS.status.textContent = `Сгенерировано ${CARDS.length} карточек`;
+  }catch(e){
+    CELS.status.textContent = 'Ошибка генерации. Повторите ещё раз.';
+  }finally{
+    CELS.btnGen.classList.remove('disabled'); CELS.btnGen.disabled = false;
+  }
+}
+let cardsLoadedFor = null;
+async function ensureCardsLoaded(topicId){
+  if (cardsLoadedFor === topicId) return;
+  await loadCards(topicId);
+  cardsLoadedFor = topicId;
+}
+function prevCard(){ if (!CARDS.length) return; ci = (ci - 1 + CARDS.length) % CARDS.length; setCardFlipped(false); renderCard(); }
+function nextCard(){ if (!CARDS.length) return; ci = (ci + 1) % CARDS.length; setCardFlipped(false); renderCard(); }
+function flipCard(){ setCardFlipped(!flippedCard); }
+
+CELS.box.addEventListener('click', flipCard);
+CELS.btnPrev.addEventListener('click', prevCard);
+CELS.btnNext.addEventListener('click', nextCard);
+CELS.btnFlip.addEventListener('click', flipCard);
+CELS.btnShuffle.addEventListener('click', ()=>{ shuffleOrder(); setCardFlipped(false); renderCard(); });
+CELS.btnGen.addEventListener('click', ()=>generateCards(CURRENT));
+document.addEventListener('keydown', (e)=>{
+  if (document.getElementById('block-cards').hidden) return;
+  if (e.key===' ') { e.preventDefault(); flipCard(); }
+  if (e.key==='ArrowRight') nextCard();
+  if (e.key==='ArrowLeft') prevCard();
 });
 
 /* ===== Select topic ===== */
@@ -557,7 +743,7 @@ async function selectTopic(id){
   document.getElementById('aiStatus').textContent = '';
   document.getElementById('block-ai').hidden = false;
 
-  // Соц/комментарии
+  // Соц/комменты
   document.getElementById('block-social').hidden = false;
 
   await loadComments(id);
@@ -570,6 +756,10 @@ async function selectTopic(id){
   await loadQA(id);
 
   history.replaceState(null, '', '#topic=' + encodeURIComponent(id));
+
+  // Сброс карточек при смене темы
+  cardsLoadedFor = null; CARDS = []; ci = 0; setCardFlipped(false); renderCard();
+  if (ACTIVE_TAB==='cards') ensureCardsLoaded(id);
 }
 
 /* ===== Boot ===== */
@@ -625,6 +815,8 @@ document.getElementById('commentForm').addEventListener('submit', async (e)=>{
 });
 document.getElementById('aiForm').addEventListener('submit', (e)=>{ e.preventDefault(); askAI(); });
 
+/* По умолчанию показываем «Материал» */
+showTab('material');
 boot();
 </script>
 </body>
